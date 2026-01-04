@@ -1,0 +1,1050 @@
+========================================
+   ASH TALENTS MARKETPLACE
+   CODE COMPLET - TOUS LES FICHIERS MANQUANTS
+========================================
+
+Ce fichier contient TOUT le code de tous les fichiers manquants.
+Pour chaque fichier, copiez le code entre les lignes --- et créez le fichier au chemin indiqué.
+
+=======================================
+BACKEND - MODULE AUTH
+=======================================
+
+--- backend/src/auth/auth.controller.ts ---
+import { Controller, Post, Body } from '@nestjs/common';
+import { AuthService } from './auth.service';
+
+@Controller('auth')
+export class AuthController {
+  constructor(private authService: AuthService) {}
+
+  @Post('login')
+  async login(@Body() body: { email: string; password: string }) {
+    const user = await this.authService.validateUser(body.email, body.password);
+    if (!user) throw new Error('Invalid credentials');
+    return this.authService.login(user);
+  }
+}
+
+--- backend/src/auth/jwt.strategy.ts ---
+import { Injectable } from '@nestjs/common';
+import { PassportStrategy } from '@nestjs/passport';
+import { ExtractJwt, Strategy } from 'passport-jwt';
+
+@Injectable()
+export class JwtStrategy extends PassportStrategy(Strategy) {
+  constructor() {
+    super({
+      jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+      ignoreExpiration: false,
+      secretOrKey: process.env.JWT_SECRET || 'secret',
+    });
+  }
+
+  async validate(payload: any) {
+    return { userId: payload.sub, email: payload.email, type: payload.type };
+  }
+}
+
+=======================================
+BACKEND - MODULE CREATORS
+=======================================
+
+--- backend/src/creators/creators.module.ts ---
+import { Module } from '@nestjs/common';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { CreatorsService } from './creators.service';
+import { CreatorsController } from './creators.controller';
+import { Creator } from './creator.entity';
+
+@Module({
+  imports: [TypeOrmModule.forFeature([Creator])],
+  providers: [CreatorsService],
+  controllers: [CreatorsController],
+  exports: [CreatorsService],
+})
+export class CreatorsModule {}
+
+--- backend/src/creators/creator.entity.ts ---
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn } from 'typeorm';
+
+@Entity('creators')
+export class Creator {
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
+
+  @Column()
+  name: string;
+
+  @Column()
+  email: string;
+
+  @Column({ nullable: true })
+  bio: string;
+
+  @Column({ type: 'int', default: 0 })
+  followers: number;
+
+  @Column({ type: 'float', default: 0 })
+  engagement: number;
+
+  @Column('simple-array', { nullable: true })
+  niches: string[];
+
+  @Column('simple-array', { nullable: true })
+  platforms: string[];
+
+  @Column({ type: 'float', nullable: true })
+  rate: number;
+
+  @Column({ default: false })
+  verified: boolean;
+
+  @CreateDateColumn()
+  createdAt: Date;
+
+  @UpdateDateColumn()
+  updatedAt: Date;
+}
+
+
+--- backend/src/creators/creators.service.ts ---
+import { Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { Creator } from './creator.entity';
+
+@Injectable()
+export class CreatorsService {
+  constructor(
+    @InjectRepository(Creator)
+    private repo: Repository<Creator>,
+  ) {}
+
+  async create(data: Partial<Creator>): Promise<Creator> {
+    return this.repo.save(this.repo.create(data));
+  }
+
+  async findAll(): Promise<Creator[]> {
+    return this.repo.find();
+  }
+
+  async findById(id: string): Promise<Creator> {
+    return this.repo.findOne({ where: { id } });
+  }
+
+  async update(id: string, data: Partial<Creator>): Promise<Creator> {
+    await this.repo.update(id, data);
+    return this.findById(id);
+  }
+
+  async delete(id: string): Promise<void> {
+    await this.repo.delete(id);
+  }
+}
+
+--- backend/src/creators/creators.controller.ts ---
+import { Controller, Get, Post, Put, Delete, Param, Body, UseGuards } from '@nestjs/common';
+import { AuthGuard } from '@nestjs/passport';
+import { CreatorsService } from './creators.service';
+import { Creator } from './creator.entity';
+
+@Controller('creators')
+export class CreatorsController {
+  constructor(private service: CreatorsService) {}
+
+  @Get()
+  findAll(): Promise<Creator[]> {
+    return this.service.findAll();
+  }
+
+  @Get(':id')
+  findById(@Param('id') id: string): Promise<Creator> {
+    return this.service.findById(id);
+  }
+
+  @Post()
+  @UseGuards(AuthGuard('jwt'))
+  create(@Body() data: Partial<Creator>): Promise<Creator> {
+    return this.service.create(data);
+  }
+
+  @Put(':id')
+  @UseGuards(AuthGuard('jwt'))
+  update(@Param('id') id: string, @Body() data: Partial<Creator>): Promise<Creator> {
+    return this.service.update(id, data);
+  }
+
+  @Delete(':id')
+  @UseGuards(AuthGuard('jwt'))
+  delete(@Param('id') id: string): Promise<void> {
+    return this.service.delete(id);
+  }
+}
+
+=======================================
+BACKEND - MODULE BRANDS
+=======================================
+
+--- backend/src/brands/brands.module.ts ---
+import { Module } from '@nestjs/common';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { BrandsService } from './brands.service';
+import { BrandsController } from './brands.controller';
+import { Brand } from './brand.entity';
+
+@Module({
+  imports: [TypeOrmModule.forFeature([Brand])],
+  providers: [BrandsService],
+  controllers: [BrandsController],
+  exports: [BrandsService],
+})
+export class BrandsModule {}
+
+--- backend/src/brands/brand.entity.ts ---
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn } from 'typeorm';
+
+@Entity('brands')
+export class Brand {
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
+
+  @Column()
+  name: string;
+
+  @Column()
+  email: string;
+
+  @Column({ nullable: true })
+  description: string;
+
+  @Column({ nullable: true })
+  website: string;
+
+  @Column('simple-array', { nullable: true })
+  niches: string[];
+
+  @Column({ type: 'float', nullable: true })
+  budget: number;
+
+  @Column({ nullable: true })
+  industry: string;
+
+  @Column({ default: false })
+  verified: boolean;
+
+  @CreateDateColumn()
+  createdAt: Date;
+
+  @UpdateDateColumn()
+  updatedAt: Date;
+}
+
+--- backend/src/brands/brands.service.ts ---
+import { Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { Brand } from './brand.entity';
+
+@Injectable()
+export class BrandsService {
+  constructor(
+    @InjectRepository(Brand)
+    private repo: Repository<Brand>,
+  ) {}
+
+  async create(data: Partial<Brand>): Promise<Brand> {
+    return this.repo.save(this.repo.create(data));
+  }
+
+  async findAll(): Promise<Brand[]> {
+    return this.repo.find();
+  }
+
+  async findById(id: string): Promise<Brand> {
+    return this.repo.findOne({ where: { id } });
+  }
+
+  async update(id: string, data: Partial<Brand>): Promise<Brand> {
+    await this.repo.update(id, data);
+    return this.findById(id);
+  }
+
+  async delete(id: string): Promise<void> {
+    await this.repo.delete(id);
+  }
+}
+
+--- backend/src/brands/brands.controller.ts ---
+import { Controller, Get, Post, Put, Delete, Param, Body, UseGuards } from '@nestjs/common';
+import { AuthGuard } from '@nestjs/passport';
+import { BrandsService } from './brands.service';
+import { Brand } from './brand.entity';
+
+@Controller('brands')
+export class BrandsController {
+  constructor(private service: BrandsService) {}
+
+  @Get()
+  findAll(): Promise<Brand[]> {
+    return this.service.findAll();
+  }
+
+  @Get(':id')
+  findById(@Param('id') id: string): Promise<Brand> {
+    return this.service.findById(id);
+  }
+
+  @Post()
+  @UseGuards(AuthGuard('jwt'))
+  create(@Body() data: Partial<Brand>): Promise<Brand> {
+    return this.service.create(data);
+  }
+
+  @Put(':id')
+  @UseGuards(AuthGuard('jwt'))
+  update(@Param('id') id: string, @Body() data: Partial<Brand>): Promise<Brand> {
+    return this.service.update(id, data);
+  }
+
+  @Delete(':id')
+  @UseGuards(AuthGuard('jwt'))
+  delete(@Param('id') id: string): Promise<void> {
+    return this.service.delete(id);
+  }
+}
+
+=======================================
+BACKEND - MODULE CAMPAIGNS
+=======================================
+
+--- backend/src/campaigns/campaigns.module.ts ---
+import { Module } from '@nestjs/common';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { CampaignsService } from './campaigns.service';
+import { CampaignsController } from './campaigns.controller';
+import { Campaign } from './campaign.entity';
+
+@Module({
+  imports: [TypeOrmModule.forFeature([Campaign])],
+  providers: [CampaignsService],
+  controllers: [CampaignsController],
+  exports: [CampaignsService],
+})
+export class CampaignsModule {}
+
+--- backend/src/campaigns/campaign.entity.ts ---
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn } from 'typeorm';
+
+@Entity('campaigns')
+export class Campaign {
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
+
+  @Column()
+  brandId: string;
+
+  @Column()
+  title: string;
+
+  @Column()
+  description: string;
+
+  @Column()
+  niche: string;
+
+  @Column({ type: 'float' })
+  budget: number;
+
+  @Column({ type: 'int' })
+  slots: number;
+
+  @Column({ enum: ['draft', 'active', 'closed'], default: 'draft' })
+  status: string;
+
+  @CreateDateColumn()
+  createdAt: Date;
+
+  @UpdateDateColumn()
+  updatedAt: Date;
+}
+
+--- backend/src/campaigns/campaigns.service.ts ---
+import { Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { Campaign } from './campaign.entity';
+
+@Injectable()
+export class CampaignsService {
+  constructor(
+    @InjectRepository(Campaign)
+    private repo: Repository<Campaign>,
+  ) {}
+
+  async create(data: Partial<Campaign>): Promise<Campaign> {
+    return this.repo.save(this.repo.create(data));
+  }
+
+  async findAll(): Promise<Campaign[]> {
+    return this.repo.find();
+  }
+
+  async findById(id: string): Promise<Campaign> {
+    return this.repo.findOne({ where: { id } });
+  }
+
+  async findActive(): Promise<Campaign[]> {
+    return this.repo.find({ where: { status: 'active' } });
+  }
+
+  async update(id: string, data: Partial<Campaign>): Promise<Campaign> {
+    await this.repo.update(id, data);
+    return this.findById(id);
+  }
+
+  async delete(id: string): Promise<void> {
+    await this.repo.delete(id);
+  }
+}
+
+--- backend/src/campaigns/campaigns.controller.ts ---
+import { Controller, Get, Post, Put, Delete, Param, Body, UseGuards } from '@nestjs/common';
+import { AuthGuard } from '@nestjs/passport';
+import { CampaignsService } from './campaigns.service';
+import { Campaign } from './campaign.entity';
+
+@Controller('campaigns')
+export class CampaignsController {
+  constructor(private service: CampaignsService) {}
+
+  @Get()
+  findAll(): Promise<Campaign[]> {
+    return this.service.findAll();
+  }
+
+  @Get('active')
+  findActive(): Promise<Campaign[]> {
+    return this.service.findActive();
+  }
+
+  @Get(':id')
+  findById(@Param('id') id: string): Promise<Campaign> {
+    return this.service.findById(id);
+  }
+
+  @Post()
+  @UseGuards(AuthGuard('jwt'))
+  create(@Body() data: Partial<Campaign>): Promise<Campaign> {
+    return this.service.create(data);
+  }
+
+  @Put(':id')
+  @UseGuards(AuthGuard('jwt'))
+  update(@Param('id') id: string, @Body() data: Partial<Campaign>): Promise<Campaign> {
+    return this.service.update(id, data);
+  }
+
+  @Delete(':id')
+  @UseGuards(AuthGuard('jwt'))
+  delete(@Param('id') id: string): Promise<void> {
+    return this.service.delete(id);
+  }
+}
+
+=======================================
+BACKEND - MODULE DEALS
+=======================================
+
+--- backend/src/deals/deals.module.ts ---
+import { Module } from '@nestjs/common';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { DealsService } from './deals.service';
+import { DealsController } from './deals.controller';
+import { Deal } from './deal.entity';
+
+@Module({
+  imports: [TypeOrmModule.forFeature([Deal])],
+  providers: [DealsService],
+  controllers: [DealsController],
+  exports: [DealsService],
+})
+export class DealsModule {}
+
+--- backend/src/deals/deal.entity.ts ---
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn } from 'typeorm';
+
+@Entity('deals')
+export class Deal {
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
+
+  @Column()
+  campaignId: string;
+
+  @Column()
+  creatorId: string;
+
+  @Column()
+  brandId: string;
+
+  @Column({ type: 'float' })
+  amount: number;
+
+  @Column({ enum: ['pending', 'accepted', 'completed'], default: 'pending' })
+  status: string;
+
+  @CreateDateColumn()
+  createdAt: Date;
+
+  @UpdateDateColumn()
+  updatedAt: Date;
+}
+
+--- backend/src/deals/deals.service.ts ---
+import { Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { Deal } from './deal.entity';
+
+@Injectable()
+export class DealsService {
+  constructor(
+    @InjectRepository(Deal)
+    private repo: Repository<Deal>,
+  ) {}
+
+  async create(data: Partial<Deal>): Promise<Deal> {
+    return this.repo.save(this.repo.create(data));
+  }
+
+  async findAll(): Promise<Deal[]> {
+    return this.repo.find();
+  }
+
+  async findById(id: string): Promise<Deal> {
+    return this.repo.findOne({ where: { id } });
+  }
+
+  async getStats(): Promise<any> {
+    const total = await this.repo.count();
+    const completed = await this.repo.count({ where: { status: 'completed' } });
+    const deals = await this.repo.find();
+    const revenue = deals.reduce((sum, deal) => sum + deal.amount, 0);
+    return { total, completed, revenue };
+  }
+
+  async update(id: string, data: Partial<Deal>): Promise<Deal> {
+    await this.repo.update(id, data);
+    return this.findById(id);
+  }
+
+  async delete(id: string): Promise<void> {
+    await this.repo.delete(id);
+  }
+}
+
+--- backend/src/deals/deals.controller.ts ---
+import { Controller, Get, Post, Put, Delete, Param, Body, UseGuards } from '@nestjs/common';
+import { AuthGuard } from '@nestjs/passport';
+import { DealsService } from './deals.service';
+import { Deal } from './deal.entity';
+
+@Controller('deals')
+export class DealsController {
+  constructor(private service: DealsService) {}
+
+  @Get()
+  findAll(): Promise<Deal[]> {
+    return this.service.findAll();
+  }
+
+  @Get('stats')
+  getStats(): Promise<any> {
+    return this.service.getStats();
+  }
+
+  @Get(':id')
+  findById(@Param('id') id: string): Promise<Deal> {
+    return this.service.findById(id);
+  }
+
+  @Post()
+  @UseGuards(AuthGuard('jwt'))
+  create(@Body() data: Partial<Deal>): Promise<Deal> {
+    return this.service.create(data);
+  }
+
+  @Put(':id')
+  @UseGuards(AuthGuard('jwt'))
+  update(@Param('id') id: string, @Body() data: Partial<Deal>): Promise<Deal> {
+    return this.service.update(id, data);
+  }
+
+  @Delete(':id')
+  @UseGuards(AuthGuard('jwt'))
+  delete(@Param('id') id: string): Promise<void> {
+    return this.service.delete(id);
+  }
+}
+
+=======================================
+BACKEND - MODULE PAYMENTS
+=======================================
+
+--- backend/src/payments/payments.module.ts ---
+import { Module } from '@nestjs/common';
+import { PaymentsService } from './payments.service';
+import { PaymentsController } from './payments.controller';
+
+@Module({
+  providers: [PaymentsService],
+  controllers: [PaymentsController],
+  exports: [PaymentsService],
+})
+export class PaymentsModule {}
+
+--- backend/src/payments/payments.service.ts ---
+import { Injectable } from '@nestjs/common';
+import Stripe from 'stripe';
+
+@Injectable()
+export class PaymentsService {
+  private stripe: Stripe;
+
+  constructor() {
+    this.stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
+      apiVersion: '2023-10-16',
+    } as any);
+  }
+
+  async createPaymentIntent(amount: number, dealId: string): Promise<any> {
+    return this.stripe.paymentIntents.create({
+      amount: Math.round(amount * 100),
+      currency: 'usd',
+      metadata: { dealId },
+    });
+  }
+
+  async confirmPayment(intentId: string): Promise<any> {
+    return this.stripe.paymentIntents.retrieve(intentId);
+  }
+}
+
+--- backend/src/payments/payments.controller.ts ---
+import { Controller, Post, Get, Body, Param, UseGuards } from '@nestjs/common';
+import { AuthGuard } from '@nestjs/passport';
+import { PaymentsService } from './payments.service';
+
+@Controller('payments')
+export class PaymentsController {
+  constructor(private service: PaymentsService) {}
+
+  @Post('create-intent')
+  @UseGuards(AuthGuard('jwt'))
+  async createPaymentIntent(@Body() body: { amount: number; dealId: string }) {
+    return this.service.createPaymentIntent(body.amount, body.dealId);
+  }
+
+  @Get('confirm/:intentId')
+  @UseGuards(AuthGuard('jwt'))
+  async confirmPayment(@Param('intentId') intentId: string) {
+    return this.service.confirmPayment(intentId);
+  }
+}
+
+=======================================
+FRONTEND - CONFIGURATION FILES
+=======================================
+
+--- frontend/package.json ---
+{
+  "name": "ash-talents-frontend",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "next": "^14.0.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "axios": "^1.6.0",
+    "@stripe/react-stripe-js": "^2.4.0",
+    "@stripe/stripe-js": "^1.46.0",
+    "react-hook-form": "^7.48.0",
+    "tailwindcss": "^3.3.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.3.0",
+    "@types/node": "^20.0.0",
+    "@types/react": "^18.2.0",
+    "@types/react-dom": "^18.2.0",
+    "autoprefixer": "^10.4.0",
+    "postcss": "^8.4.0",
+    "eslint": "^8.54.0",
+    "eslint-config-next": "^14.0.0"
+  }
+}
+
+--- frontend/tsconfig.json ---
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "lib": ["ES2020", "DOM", "DOM.Iterable"],
+    "jsx": "preserve",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "resolveJsonModule": true,
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "allowJs": true,
+    "noEmit": true,
+    "incremental": true
+  },
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx"],
+  "exclude": ["node_modules"]
+}
+
+--- frontend/next.config.js ---
+/** @type {import('next').NextConfig} */
+const nextConfig = {
+  reactStrictMode: true,
+  env: {
+    NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001',
+  },
+}
+module.exports = nextConfig
+
+--- frontend/.env.local ---
+NEXT_PUBLIC_API_URL=http://localhost:3001
+NEXT_PUBLIC_STRIPE_PUBLIC_KEY=pk_live_51SljWtJXIISTBfU2W1Ho10T6obQuWBCqFcnpuHT8CkJn15XWCC43lnRHmq4i3iE8f8xCJrFAFUIBwGFclC729uU400HNwcJC4e
+
+--- frontend/tailwind.config.js ---
+module.exports = {
+  content: [
+    "./src/pages/**/*.{js,ts,jsx,tsx}",
+    "./src/components/**/*.{js,ts,jsx,tsx}",
+  ],
+  theme: {
+    extend: {},
+  },
+  plugins: [],
+}
+
+--- frontend/postcss.config.js ---
+module.exports = {
+  plugins: {
+    tailwindcss: {},
+    autoprefixer: {},
+  },
+}
+
+=======================================
+FRONTEND - PAGES
+=======================================
+
+--- frontend/src/pages/_app.tsx ---
+import '../styles/globals.css';
+
+export default function App({ Component, pageProps }) {
+  return <Component {...pageProps} />;
+}
+
+--- frontend/src/pages/index.tsx ---
+import { useRouter } from 'next/router';
+import { useEffect } from 'react';
+
+export default function Home() {
+  const router = useRouter();
+
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      router.push('/dashboard');
+    } else {
+      router.push('/login');
+    }
+  }, [router]);
+
+  return <div>Redirecting...</div>;
+}
+
+--- frontend/src/pages/login.tsx ---
+import { useState } from 'react';
+import { useRouter } from 'next/router';
+import axios from 'axios';
+
+export default function Login() {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const router = useRouter();
+
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    try {
+      const response = await axios.post(
+        `${process.env.NEXT_PUBLIC_API_URL}/auth/login`,
+        { email, password }
+      );
+      localStorage.setItem('token', response.data.access_token);
+      localStorage.setItem('user', JSON.stringify(response.data.user));
+      router.push('/dashboard');
+    } catch (err) {
+      setError('Invalid credentials');
+    }
+  };
+
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-600 to-blue-600">
+      <div className="bg-white p-8 rounded-lg shadow-lg w-96">
+        <h1 className="text-3xl font-bold mb-6 text-center text-gray-800">ASH Talents</h1>
+        <h2 className="text-xl font-semibold mb-6 text-center text-gray-600">Admin Login</h2>
+        
+        <form onSubmit={handleLogin}>
+          <div className="mb-4">
+            <label className="block text-gray-700 mb-2">Email</label>
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-purple-600"
+              placeholder="admin@ashtalents.com"
+            />
+          </div>
+
+          <div className="mb-6">
+            <label className="block text-gray-700 mb-2">Password</label>
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-purple-600"
+              placeholder="Password"
+            />
+          </div>
+
+          {error && <div className="text-red-500 mb-4">{error}</div>}
+
+          <button
+            type="submit"
+            className="w-full bg-purple-600 text-white py-2 rounded-lg font-semibold hover:bg-purple-700 transition"
+          >
+            Login
+          </button>
+        </form>
+
+        <div className="mt-6 p-4 bg-gray-100 rounded-lg text-sm text-gray-600">
+          <p className="font-semibold mb-2">Test Credentials:</p>
+          <p>Email: admin@ashtalents.com</p>
+          <p>Password: admin123</p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+--- frontend/src/pages/dashboard.tsx ---
+import { useRouter } from 'next/router';
+import { useEffect, useState } from 'react';
+import axios from 'axios';
+
+export default function Dashboard() {
+  const router = useRouter();
+  const [stats, setStats] = useState(null);
+  const [creators, setCreators] = useState([]);
+  const [brands, setBrands] = useState([]);
+  const [deals, setDeals] = useState([]);
+  const [tab, setTab] = useState('overview');
+
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      router.push('/login');
+      return;
+    }
+    fetchData(token);
+  }, [tab]);
+
+  const fetchData = async (token) => {
+    const headers = { Authorization: `Bearer ${token}` };
+    try {
+      const [stats, creators, brands, deals] = await Promise.all([
+        axios.get(`${process.env.NEXT_PUBLIC_API_URL}/deals/stats`, { headers }),
+        axios.get(`${process.env.NEXT_PUBLIC_API_URL}/creators`, { headers }),
+        axios.get(`${process.env.NEXT_PUBLIC_API_URL}/brands`, { headers }),
+        axios.get(`${process.env.NEXT_PUBLIC_API_URL}/deals`, { headers }),
+      ]);
+      setStats(stats.data);
+      setCreators(creators.data);
+      setBrands(brands.data);
+      setDeals(deals.data);
+    } catch (error) {
+      console.error('Error:', error);
+    }
+  };
+
+  const logout = () => {
+    localStorage.clear();
+    router.push('/login');
+  };
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      <nav className="bg-white shadow-sm border-b">
+        <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
+          <h1 className="text-2xl font-bold text-purple-600">ASH Talents Admin</h1>
+          <button
+            onClick={logout}
+            className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700"
+          >
+            Logout
+          </button>
+        </div>
+      </nav>
+
+      <div className="max-w-7xl mx-auto px-4 py-8">
+        {tab === 'overview' && stats && (
+          <div className="grid grid-cols-3 gap-4 mb-8">
+            <div className="bg-gradient-to-br from-blue-500 to-blue-600 text-white p-6 rounded-lg">
+              <h3 className="text-lg font-semibold mb-2">Total Deals</h3>
+              <p className="text-4xl font-bold">{stats.total}</p>
+            </div>
+            <div className="bg-gradient-to-br from-green-500 to-green-600 text-white p-6 rounded-lg">
+              <h3 className="text-lg font-semibold mb-2">Completed</h3>
+              <p className="text-4xl font-bold">{stats.completed}</p>
+            </div>
+            <div className="bg-gradient-to-br from-purple-500 to-purple-600 text-white p-6 rounded-lg">
+              <h3 className="text-lg font-semibold mb-2">Revenue</h3>
+              <p className="text-4xl font-bold">${(stats.revenue / 100).toFixed(0)}</p>
+            </div>
+          </div>
+        )}
+
+        <div className="flex gap-4 mb-6 border-b">
+          {['overview', 'creators', 'brands', 'deals'].map((t) => (
+            <button
+              key={t}
+              onClick={() => setTab(t)}
+              className={`py-3 px-4 font-semibold ${
+                tab === t ? 'border-b-2 border-purple-600 text-purple-600' : 'text-gray-600'
+              }`}
+            >
+              {t.charAt(0).toUpperCase() + t.slice(1)}
+            </button>
+          ))}
+        </div>
+
+        <div className="bg-white rounded-lg shadow p-6">
+          {tab === 'creators' && (
+            <table className="w-full">
+              <thead className="border-b">
+                <tr>
+                  <th className="text-left py-2">Name</th>
+                  <th className="text-left py-2">Email</th>
+                  <th className="text-left py-2">Followers</th>
+                </tr>
+              </thead>
+              <tbody>
+                {creators.map((c) => (
+                  <tr key={c.id} className="border-b hover:bg-gray-50">
+                    <td className="py-2">{c.name}</td>
+                    <td className="py-2">{c.email}</td>
+                    <td className="py-2">{c.followers}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+
+          {tab === 'brands' && (
+            <table className="w-full">
+              <thead className="border-b">
+                <tr>
+                  <th className="text-left py-2">Name</th>
+                  <th className="text-left py-2">Email</th>
+                  <th className="text-left py-2">Industry</th>
+                </tr>
+              </thead>
+              <tbody>
+                {brands.map((b) => (
+                  <tr key={b.id} className="border-b hover:bg-gray-50">
+                    <td className="py-2">{b.name}</td>
+                    <td className="py-2">{b.email}</td>
+                    <td className="py-2">{b.industry}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+
+          {tab === 'deals' && (
+            <table className="w-full">
+              <thead className="border-b">
+                <tr>
+                  <th className="text-left py-2">Creator ID</th>
+                  <th className="text-left py-2">Brand ID</th>
+                  <th className="text-left py-2">Amount</th>
+                  <th className="text-left py-2">Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {deals.map((d) => (
+                  <tr key={d.id} className="border-b hover:bg-gray-50">
+                    <td className="py-2">{d.creatorId.slice(0, 8)}</td>
+                    <td className="py-2">{d.brandId.slice(0, 8)}</td>
+                    <td className="py-2">${d.amount}</td>
+                    <td className="py-2">{d.status}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+--- frontend/src/styles/globals.css ---
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+  background-color: #f3f4f6;
+}
+
+=======================================
+FIN DU FICHIER - TOUS LES FICHIERS COMPLETS!
+=======================================
+
+Vous avez maintenant TOUT le code pour:
+✅ Backend complet (Auth, Creators, Brands, Campaigns, Deals, Payments)
+✅ Frontend complet (Next.js avec toutes les pages)
+✅ Configuration complète
+
+INSTRUCTIONS FINALES:
+1. Copiez chaque section de code entre --- ---
+2. Créez le fichier au chemin indiqué
+3. Collez le code
+4. Sauvegardez
+5. Une fois tous les fichiers créés, suivez le guide DEPLOY.md
+
+EMAIL DE TEST: admin@ashtalents.com
+MOT DE PASSE: admin123
+
+🎉 APPLICATION COMPLETE!
