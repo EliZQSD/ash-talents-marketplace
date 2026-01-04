@@ -35,5 +35,3 @@ export class CreatorsController {
     return this.service.delete(id);
   }
 }
-
-BACKEND - MODULE BRANDS
