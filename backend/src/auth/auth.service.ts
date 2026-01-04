@@ -25,8 +25,13 @@ export class AuthService {
   async validateUser(email: string, password: string): Promise<any> {
     // Temporary hardcoded test credentials
     // TODO: Replace with real database lookup
-    if (email === 'admin@ashtalents.com' && password === 'admin123') {
-      return {
+        console.log('=== VALIDATION DEBUG ===');
+    console.log('Received email:', email, 'Type:', typeof email);
+    console.log('Received password:', password, 'Type:', typeof password);
+    console.log('Email match:', email === 'admin@ashtalents.com');
+    console.log('Password match:', password === 'admin123');
+    
+    if (email?.trim().toLowerCase() === 'admin@ashtalents.com' && password?.trim() === 'admin123') {      return {
         id: 1,
         username: 'admin',
         email: 'admin@ashtalents.com',
