@@ -32,6 +32,15 @@ export class Creator {
   @Column({ default: false })
   verified: boolean;
 
+    @Column({ nullable: true })
+  profilePictureUrl: string;
+
+  @Column({ nullable: true })
+  instagramHandle: string;
+
+  @Column({ nullable: true })
+  tiktokHandle: string;
+
   @CreateDateColumn()
   createdAt: Date;
 
