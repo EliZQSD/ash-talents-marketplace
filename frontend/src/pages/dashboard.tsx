@@ -19,7 +19,7 @@ export default function Dashboard() {
     fetchData(token);
   }, [tab]);
 
-  const fetchData = async (token) => {
+  const fetchData = async (token: string) => {
     const headers = { Authorization: `Bearer ${token}` };
     try {
       const [stats, creators, brands, deals] = await Promise.all([
