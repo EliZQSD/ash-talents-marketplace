@@ -35,5 +35,3 @@ export class BrandsController {
     return this.service.delete(id);
   }
 }
-
-BACKEND - MODULE CAMPAIGNS
