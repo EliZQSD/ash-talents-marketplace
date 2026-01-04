@@ -40,5 +40,3 @@ export class DealsController {
     return this.service.delete(id);
   }
 }
-
-BACKEND - MODULE PAYMENTS
