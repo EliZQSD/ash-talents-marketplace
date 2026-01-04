@@ -22,6 +22,12 @@ export class AuthService {
     return this.jwtService.verify(token);
   }
 
+    async validateUser(email: string, password: string): Promise<any> {
+    // TODO: Implement user lookup from database
+    // For now, return null as stub
+    return null;
+  }
+
 
   async login(user: any) {
     const payload = { username: user.username, sub: user.id };
