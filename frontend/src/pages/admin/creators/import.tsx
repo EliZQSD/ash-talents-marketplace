@@ -57,7 +57,7 @@ export default function ImportCreator() {
     try {
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/creators`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json' }, 'Authorization': `Bearer ${localStorage.getItem('token')}`,
         body: JSON.stringify({
           name: importedData.name,
           email: `${importedData.handle.replace('@', '')}@creator.com`,
