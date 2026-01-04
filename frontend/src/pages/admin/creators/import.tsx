@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useRouter } from 'next/router';
+import AdminNav from '../../../components/AdminNav';
 
 interface ImportedCreator {
   name: string;
@@ -86,6 +87,7 @@ export default function ImportCreator() {
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">
+            <AdminNav />
       <div className="max-w-4xl mx-auto px-4">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Import Creator Profile</h1>
