@@ -23,6 +23,11 @@ export class CreatorsController {
     return this.service.create(data);
   }
 
+    @Post('import')
+  async importCreator(@Body() importDto: { url: string; platform: string }) {
+    return this.service.importCreatorProfile(importDto.url, importDto.platform);
+  }
+
   @Put(':id')
   @UseGuards(AuthGuard('jwt'))
   update(@Param('id') id: string, @Body() data: Partial<Creator>): Promise<Creator> {
