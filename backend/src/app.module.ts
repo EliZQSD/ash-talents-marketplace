@@ -7,6 +7,7 @@ import { BrandsModule } from './brands/brands.module';
 import { CampaignsModule } from './campaigns/campaigns.module';
 import { DealsModule } from './deals/deals.module';
 import { PaymentsModule } from './payments/payments.module';
+import { AdminModule } from './admin/admin.module';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { PaymentsModule } from './payments/payments.module';
       logging: false,
     }),
     AuthModule,
+        AdminModule,
     CreatorsModule,
     BrandsModule,
     CampaignsModule,
