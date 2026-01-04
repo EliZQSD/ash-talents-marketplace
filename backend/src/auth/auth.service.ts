@@ -22,16 +22,24 @@ export class AuthService {
     return this.jwtService.verify(token);
   }
 
-    async validateUser(email: string, password: string): Promise<any> {
-    // TODO: Implement user lookup from database
-    // For now, return null as stub
+  async validateUser(email: string, password: string): Promise<any> {
+    // Temporary hardcoded test credentials
+    // TODO: Replace with real database lookup
+    if (email === 'admin@ashtalents.com' && password === 'admin123') {
+      return {
+        id: 1,
+        username: 'admin',
+        email: 'admin@ashtalents.com',
+        role: 'admin'
+      };
+    }
     return null;
   }
-
 
   async login(user: any) {
     const payload = { username: user.username, sub: user.id };
     return {
       access_token: await this.generateToken(payload),
     };
-  }}
+  }
+}
