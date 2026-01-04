@@ -1,0 +1,33 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+  background-color: #f3f4f6;
+}
+
+FIN DU FICHIER - TOUS LES FICHIERS COMPLETS!
+
+Vous avez maintenant TOUT le code pour:
+✅ Backend complet (Auth, Creators, Brands, Campaigns, Deals, Payments)
+✅ Frontend complet (Next.js avec toutes les pages)
+✅ Configuration complète
+
+INSTRUCTIONS FINALES:
+1. Copiez chaque section de code entre --- ---
+2. Créez le fichier au chemin indiqué
+3. Collez le code
+4. Sauvegardez
+5. Une fois tous les fichiers créés, suivez le guide DEPLOY.md
+
+EMAIL DE TEST: admin@ashtalents.com
+MOT DE PASSE: admin123
+
+🎉 APPLICATION COMPLETE!
