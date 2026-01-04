@@ -4,10 +4,10 @@ import axios from 'axios';
 
 export default function Dashboard() {
   const router = useRouter();
-  const [stats, setStats] = useState(null);
-  const [creators, setCreators] = useState([]);
-  const [brands, setBrands] = useState([]);
-  const [deals, setDeals] = useState([]);
+  const [stats, setStats] = useState<any>(null);
+  const [creators, setCreators] = useState<any>([]);
+  const [brands, setBrands] = useState([<any>]);
+  const [deals, setDeals] = useState<any>([]);
   const [tab, setTab] = useState('overview');
 
   useEffect(() => {
