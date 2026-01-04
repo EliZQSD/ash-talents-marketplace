@@ -18,5 +18,3 @@ export class PaymentsController {
     return this.service.confirmPayment(intentId);
   }
 }
-
-FRONTEND - CONFIGURATION FILES
