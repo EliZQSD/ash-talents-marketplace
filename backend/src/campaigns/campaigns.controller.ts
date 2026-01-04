@@ -40,5 +40,3 @@ export class CampaignsController {
     return this.service.delete(id);
   }
 }
-
-BACKEND - MODULE DEALS
